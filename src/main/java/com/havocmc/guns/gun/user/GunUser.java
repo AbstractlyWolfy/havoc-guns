@@ -52,7 +52,6 @@ public class GunUser {
 
             try {
                 gunSlots.put(i, type.createGun());
-                System.out.println("Loaded gun in at slot " + i + ": " + type.name());
             } catch (Exception e) {
                 e.printStackTrace();
             }

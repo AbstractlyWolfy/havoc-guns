@@ -47,23 +47,15 @@ public class GunCommand extends Command {
 
             Gun gun = gunType.createGun();
 
-            HashMap<Integer, ItemStack> slots = player.getInventory().addItem(new ItemFactory(gun.type().getItem())
+            player.getInventory().addItem(new ItemFactory(gun.type().getItem())
                     .setDisplayName("&b&l" + StringUtils.capitalize(gun.type().getName()))
                     .setLore(gun.type().getLore())
                     .appendLore(" ", "&eRight click &7to fire.")
                     .addItemFlag(ItemFlag.HIDE_ATTRIBUTES)
                     .build());
 
-            slots.forEach((slot, item) -> {
-                GunType type = GunType.isGun(item);
 
-                if (type == null) {
-                    return;
-                }
-
-                user.addGun(slot, type);
-            });
-
+            user.load();
             player.sendMessage(ChatColor.GREEN + "You have been given a " + gun.type().getName());
         } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
