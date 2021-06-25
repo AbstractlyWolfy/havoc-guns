@@ -67,16 +67,31 @@ public class LightningGun implements Gun {
         Bukkit.getOnlinePlayers().stream().filter(nearby -> nearby.getLocation().distance(bullet.getLocation()) < 50).forEach(online -> {
 
             try {
+                String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+
+                boolean v1_17 = version.equals("v1_17_R1");
+
+                String packetClazzPath;
+                String packetEntityDestroyClazzPath;
+
+                // 1.17
+                if (v1_17) {
+                    packetClazzPath = "net.minecraft.network.protocol.Packet";
+                    packetEntityDestroyClazzPath = "net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy";
+                } else {
+                    packetClazzPath = "net.minecraft.server." + version + ".Packet";
+                    packetEntityDestroyClazzPath = "net.minecraft.server." + version + ".PacketPlayOutEntityDestroy";
+                }
 
                 // Send a packet to remove the snowball visually.
-                Class<?> packetPlayOutEntityDestroy = Class.forName("net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy");
+                Class<?> packetPlayOutEntityDestroy = Class.forName(packetEntityDestroyClazzPath);
                 Constructor<?> packetPlayOutEntityDestroyConstructor = packetPlayOutEntityDestroy.getConstructor(int.class);
 
                 Object packetPlayOutEntityDestroyObj = packetPlayOutEntityDestroyConstructor.newInstance(bullet.getEntityId());
 
                 Object handle = online.getClass().getMethod("getHandle").invoke(online);
-                Object playerConnection = handle.getClass().getField("b").get(handle);
-                playerConnection.getClass().getMethod("sendPacket", Class.forName("net.minecraft.network.protocol.Packet")).invoke(playerConnection, packetPlayOutEntityDestroyObj);
+                Object playerConnection = handle.getClass().getField(v1_17 ? "b" : "playerConnection").get(handle);
+                playerConnection.getClass().getMethod("sendPacket", Class.forName(packetClazzPath)).invoke(playerConnection, packetPlayOutEntityDestroyObj);
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | NoSuchFieldException | InstantiationException e) {
                 e.printStackTrace();
             }
@@ -138,7 +153,6 @@ public class LightningGun implements Gun {
             @Override
             public void run() {
                 stand.remove();
-
                 // Extra precaution in case a glitch happens to remove redundant stands
                 stands.forEach(ArmorStand::remove);
             }
@@ -151,6 +165,7 @@ public class LightningGun implements Gun {
         if (bullet != null) {
             bullet.remove();
         }
+
         // Handle removal of armour stand for effects
         if (stands.size() > 0) {
             stands.forEach(ArmorStand::remove);

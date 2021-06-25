@@ -61,27 +61,6 @@ public class GunUser {
         slots = gunSlots;
     }
 
-    public void addGun(int slot, GunType type) {
-
-        try {
-            slots.put(slot, type.createGun());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void swapGun(int slotA, int slotB) {
-        Gun gunA = slots.getOrDefault(slotA, null);
-        Gun gunB = slots.getOrDefault(slotB, null);
-
-        if (gunA == null) {
-            return;
-        }
-
-        slots.put(slotB, gunA);
-        slots.put(slotA, gunB);
-    }
-
     public void removeGun(int slot) {
         slots.remove(slot);
     }
